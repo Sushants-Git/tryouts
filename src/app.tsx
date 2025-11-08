@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from "motion/react";
-import prices from "./prices.json";
 import { useState, useMemo, useRef, useEffect, memo } from "react";
 import { Routes, Route, useLocation, useSearchParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+import prices from "./prices.json";
 
 function App() {
     return (
@@ -192,7 +193,7 @@ const SponsorPrizes = ({
     }, [prizeDetails, onActiveSponsorChange]);
 
     return (
-        <div className="space-y-10 mt-5">
+        <div className="mt-5">
             {prizeDetails.map((sponsor, index) => {
                 const totalAmount = sponsor.tracks?.reduce((sum, track) => {
                     const trackSum = track.prizes?.reduce(
