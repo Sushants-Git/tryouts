@@ -1,6 +1,6 @@
 import prices from "./prices.json";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, useSearchParams } from "react-router-dom";
 
 function App() {
     return (
@@ -12,7 +12,20 @@ function App() {
 
 function Home() {
     const prizeDetails = prices.pageProps.prizeDetails;
-    const [activeSponsor, setActiveSponsor] = useState<string | null>(null);
+    const [searchParams] = useSearchParams();
+
+    const [activeSponsor, setActiveSponsor] = useState<string | null>(() => {
+        const sponsorParam = searchParams.get("sponsor");
+        if (sponsorParam) return sponsorParam;
+
+        const firstOrganizer = prizeDetails.find((s) => s.type === "organizer");
+        if (firstOrganizer) return firstOrganizer.name;
+
+        const firstPartner = prizeDetails.find((s) => s.type === "sponsor");
+        if (firstPartner) return firstPartner.name;
+
+        return null;
+    });
 
     return (
         <div className="bg-bg">
