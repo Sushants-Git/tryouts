@@ -35,7 +35,7 @@ function Home() {
         <div className="bg-bg min-h-screen">
             <div className="w-full max-w-[1200px] mx-auto font-geist bg-bg pb-[500px]">
                 <div className="flex flex-col md:flex-row w-full gap-6 md:gap-0">
-                    <div className="w-full md:w-[30%] pt-4 px-4 md:px-0">
+                    <div className="w-full md:w-[30%] pt-4 px-4 md:px-0 ml-4">
                         <IndexSidebar
                             prizeDetails={prizeDetails}
                             activeSponsor={activeSponsor}
