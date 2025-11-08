@@ -70,6 +70,17 @@ const Content = memo(function Content({
     onActiveSponsorChange: (name: string | null) => void;
 }) {
     const [query, setQuery] = useState("");
+    const debounceRef = useRef<number | null>(null);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        debounceRef.current = setTimeout(() => {
+            setQuery(value);
+        }, 300);
+    };
 
     const filteredDetails = useMemo(() => {
         if (!query.trim()) return prizeDetails;
@@ -98,8 +109,7 @@ const Content = memo(function Content({
             <div className="sticky top-0 z-10 border-gray-200 py-4 bg-bg">
                 <input
                     type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={handleChange}
                     placeholder="Search track or prize name..."
                     className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-sm"
                 />
