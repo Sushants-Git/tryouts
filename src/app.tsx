@@ -380,22 +380,27 @@ function TrackList({ tracks }: { tracks: TrackProps[] }) {
 
                                 <div className="pb-3">
                                     {track.prizes?.length > 0 && (
-                                        <div className="mt-3 border-t border-gray-200 pt-2">
-                                            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                                        <div className="mt-3 border-t border-gray-200 pt-3">
+                                            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">
                                                 Prize Breakdown
                                             </h4>
-                                            {track.prizes.map((p) => (
-                                                <div
-                                                    key={p.uuid}
-                                                    className="flex justify-between text-sm py-0.5"
-                                                >
-                                                    <div>{p.name}</div>
-                                                    <div className="font-mono text-gray-600">
-                                                        $
-                                                        {p.amount.toLocaleString()}
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {track.prizes.map((p) => (
+                                                    <div
+                                                        key={p.uuid}
+                                                        className="flex flex-col justify-between border border-gray-200 bg-white/70 rounded-md px-3 py-2"
+                                                    >
+                                                        <div className="text-[14px] text-gray-800 font-medium truncate">
+                                                            {p.name}
+                                                        </div>
+                                                        <div className="text-[13px] text-gray-600 font-mono mt-1">
+                                                            $
+                                                            {p.amount.toLocaleString()}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
