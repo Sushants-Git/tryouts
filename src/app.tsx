@@ -1,4 +1,5 @@
 import prices from "./prices.json";
+import { useState, useMemo } from "react";
 
 function App() {
     const prizeDetails = prices.pageProps.prizeDetails;
@@ -26,9 +27,43 @@ function Content({
 }: {
     prizeDetails: typeof prices.pageProps.prizeDetails;
 }) {
+    const [query, setQuery] = useState("");
+
+    const filteredDetails = useMemo(() => {
+        if (!query.trim()) return prizeDetails;
+
+        const lower = query.toLowerCase();
+
+        return prizeDetails.filter((sponsor) => {
+            const sponsorMatches = sponsor.name?.toLowerCase().includes(lower);
+
+            const trackOrPrizeMatches = sponsor.tracks.some((track) => {
+                const trackMatches = track.name?.toLowerCase().includes(lower);
+
+                const prizeMatches = track.prizes?.some((p) =>
+                    p.name?.toLowerCase().includes(lower)
+                );
+
+                return trackMatches || prizeMatches;
+            });
+
+            return sponsorMatches || trackOrPrizeMatches;
+        }) as typeof prizeDetails;
+    }, [query, prizeDetails]);
+
     return (
-        <div>
-            <SponsorPrizes prizeDetails={prizeDetails} />
+        <div className="p-4 border border-red-600">
+            <div className="sticky top-0 z-10 border-gray-200 py-4 bg-bg">
+                <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search track or prize name..."
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+            </div>
+
+            <SponsorPrizes prizeDetails={filteredDetails} />
         </div>
     );
 }
@@ -56,7 +91,7 @@ const SponsorPrizes = ({
                             className="flex items-center gap-4 border border-gray-200 bg-white px-5 py-4"
                         >
                             {sponsor.logo ? (
-                                <div className="flex items-center justify-center rounded-md bg-black">
+                                <div className="flex items-center justify-center rounded-md">
                                     <img
                                         src={sponsor.logo}
                                         alt={sponsor.name}
