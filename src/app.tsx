@@ -1,7 +1,22 @@
 import prices from "./prices.json";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import {
+    Routes,
+    Route,
+    useSearchParams,
+    useNavigate,
+    useLocation,
+} from "react-router-dom";
 
 function App() {
+    return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+        </Routes>
+    );
+}
+
+function Home() {
     const prizeDetails = prices.pageProps.prizeDetails;
 
     return (
@@ -73,9 +88,56 @@ const SponsorPrizes = ({
 }: {
     prizeDetails: typeof prices.pageProps.prizeDetails;
 }) => {
+    const sponsorRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const sponsorName = params.get("sponsor");
+
+        if (sponsorName && sponsorRefs.current[sponsorName]) {
+            setTimeout(() => {
+                sponsorRefs.current[sponsorName]?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            }, 200);
+        }
+    }, [location.search]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            let currentVisible: string | null = null;
+
+            for (const sponsor of prizeDetails) {
+                const el = sponsorRefs.current[sponsor.name];
+                if (!el) continue;
+
+                const rect = el.getBoundingClientRect();
+                if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
+                    currentVisible = sponsor.name;
+                    break;
+                }
+            }
+
+            if (currentVisible) {
+                const url = new URL(window.location.href);
+                const existing = url.searchParams.get("sponsor");
+
+                if (existing !== currentVisible) {
+                    url.searchParams.set("sponsor", currentVisible);
+                    window.history.replaceState({}, "", url.toString());
+                }
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [prizeDetails]);
+
     return (
         <div>
-            {prizeDetails.map((sponsor) => {
+            {prizeDetails.map((sponsor, index) => {
                 const totalAmount = sponsor.tracks?.reduce((sum, track) => {
                     const trackSum = track.prizes?.reduce(
                         (a, p) => a + (p.amount || 0),
@@ -85,12 +147,16 @@ const SponsorPrizes = ({
                 }, 0);
 
                 return (
-                    <div>
-                        <div
-                            key={sponsor.uuid}
-                            className="flex items-center gap-4 border border-gray-200 bg-white px-5 py-4"
-                        >
-                            {sponsor.logo ? (
+                    <div
+                        key={sponsor.uuid}
+                        ref={(el) => {
+                            sponsorRefs.current[sponsor.name] = el;
+                        }}
+                        id={sponsor.name}
+                        className="scroll-mt-24" // offset for sticky header
+                    >
+                        <div className="flex items-center gap-4 border border-gray-200 bg-white px-5 py-4">
+                            {sponsor.logo && (
                                 <div className="flex items-center justify-center rounded-md">
                                     <img
                                         src={sponsor.logo}
@@ -98,8 +164,7 @@ const SponsorPrizes = ({
                                         className="h-12 w-12 object-contain rounded"
                                     />
                                 </div>
-                            ) : null}
-
+                            )}
                             <div>
                                 <div className="text-base tracking-wide font-bold text-gray-900">
                                     {sponsor.name}
@@ -114,11 +179,13 @@ const SponsorPrizes = ({
                             <TrackList tracks={sponsor.tracks} />
                         </div>
 
-                        <div className="fill-gray-400 h-20 flex items-center">
-                            <div className="mx-auto w-fit h-auto">
-                                <Seperator size={30} />
+                        {prizeDetails.length - 1 != index && (
+                            <div className="fill-gray-400 h-20 flex items-center">
+                                <div className="mx-auto w-fit h-auto">
+                                    <Seperator size={30} />
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 );
             })}
