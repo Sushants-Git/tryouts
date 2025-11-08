@@ -1,5 +1,5 @@
 import prices from "./prices.json";
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 
 function App() {
@@ -326,7 +326,9 @@ function IndexSidebar({
                 {organizer.map((s) => (
                     <div
                         key={s.uuid}
-                        ref={(el) => (itemRefs.current[s.name] = el)}
+                        ref={(el) => {
+                            itemRefs.current[s.name] = el;
+                        }}
                         onClick={() => onSponsorClick(s.name)}
                         className={`cursor-pointer mb-3 rounded-md px-2 py-1.5 transition-colors ${
                             activeSponsor === s.name
@@ -347,7 +349,9 @@ function IndexSidebar({
                 {partners.map((s) => (
                     <div
                         key={s.uuid}
-                        ref={(el) => (itemRefs.current[s.name] = el)}
+                        ref={(el) => {
+                            itemRefs.current[s.name] = el;
+                        }}
                         onClick={() => onSponsorClick(s.name)}
                         className={`cursor-pointer mb-3 rounded-md px-2 py-1.5 transition-colors ${
                             activeSponsor === s.name
