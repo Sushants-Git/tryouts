@@ -14,3 +14,4 @@ when we click on them.
 list and then scrolling to the correct section, which looks cool but that bit of lag seems unnecessary.
 - [] i don't like the fact that both the index page and the current page have a lot of motion, like when we scroll the content page where
 all the prices are mentioned the index also moves so it takes my attention away from the content, which kinda feels off.
+- [] Ability to search
