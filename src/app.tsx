@@ -32,7 +32,7 @@ function Home() {
             <div className="w-full max-w-320 md:w-[85%] lg:w-[75%] mx-auto h-full font-geist bg-bg pb-[500px]">
                 <div className="min-h-screen flex flex-col">
                     <div className="flex w-full">
-                        <div className="w-[30%]">
+                        <div className="w-[30%] pt-4">
                             <IndexSidebar
                                 prizeDetails={prizeDetails}
                                 activeSponsor={activeSponsor}
