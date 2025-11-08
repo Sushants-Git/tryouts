@@ -137,34 +137,47 @@ const SponsorPrizes = ({
     }, [location.search]);
 
     useEffect(() => {
-        const handleScroll = () => {
-            let currentVisible: string | null = null;
+        let debounceTimer: number | null = null;
 
-            for (const sponsor of prizeDetails) {
-                const el = sponsorRefs.current[sponsor.name];
-                if (!el) continue;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visibleEntry = entries.find(
+                    (entry) => entry.isIntersecting
+                );
+                if (!visibleEntry) return;
 
-                const rect = el.getBoundingClientRect();
-                if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
-                    currentVisible = sponsor.name;
-                    break;
-                }
+                const sponsorName =
+                    visibleEntry.target.getAttribute("data-name");
+                if (!sponsorName) return;
+
+                if (debounceTimer) clearTimeout(debounceTimer);
+
+                debounceTimer = window.setTimeout(() => {
+                    onActiveSponsorChange(sponsorName);
+
+                    const url = new URL(window.location.href);
+                    const existing = url.searchParams.get("sponsor");
+                    if (existing !== sponsorName) {
+                        url.searchParams.set("sponsor", sponsorName);
+                        window.history.replaceState({}, "", url.toString());
+                    }
+                }, 100);
+            },
+            {
+                root: null,
+                rootMargin: "0px 0px -50% 0px", // fire when top half enters viewport
+                threshold: 0.25,
             }
+        );
 
-            onActiveSponsorChange(currentVisible);
+        Object.values(sponsorRefs.current).forEach((el) => {
+            if (el) observer.observe(el);
+        });
 
-            if (currentVisible) {
-                const url = new URL(window.location.href);
-                const existing = url.searchParams.get("sponsor");
-                if (existing !== currentVisible) {
-                    url.searchParams.set("sponsor", currentVisible);
-                    window.history.replaceState({}, "", url.toString());
-                }
-            }
+        return () => {
+            if (debounceTimer) clearTimeout(debounceTimer);
+            observer.disconnect();
         };
-
-        window.addEventListener("scroll", handleScroll, { passive: true });
-        return () => window.removeEventListener("scroll", handleScroll);
     }, [prizeDetails, onActiveSponsorChange]);
 
     return (
@@ -185,7 +198,8 @@ const SponsorPrizes = ({
                             sponsorRefs.current[sponsor.name] = el;
                         }}
                         id={sponsor.name}
-                        className="scroll-mt-24" // offset for sticky header
+                        data-name={sponsor.name}
+                        className="scroll-mt-24"
                     >
                         <div className="flex items-center gap-4 border border-gray-200 bg-white px-5 py-4">
                             {sponsor.logo && (
@@ -211,7 +225,7 @@ const SponsorPrizes = ({
                             <TrackList tracks={sponsor.tracks} />
                         </div>
 
-                        {prizeDetails.length - 1 != index && (
+                        {prizeDetails.length - 1 !== index && (
                             <div className="fill-gray-400 h-20 flex items-center">
                                 <div className="mx-auto w-fit h-auto">
                                     <Seperator size={30} />
@@ -312,18 +326,17 @@ function IndexSidebar({
             const container = scrollRef.current;
             if (!el || !container) return;
 
-            const elRect = el.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
+            const elOffsetTop = el.offsetTop;
+            const elHeight = el.offsetHeight;
+            const containerHeight = container.clientHeight;
 
-            if (
-                elRect.top < containerRect.top + 16 ||
-                elRect.bottom > containerRect.bottom - 16
-            ) {
-                el.scrollIntoView({
-                    behavior: "smooth",
-                    block: "nearest",
-                });
-            }
+            const scrollPosition =
+                elOffsetTop - containerHeight / 2 + elHeight / 2;
+
+            container.scrollTo({
+                top: scrollPosition,
+                behavior: "smooth",
+            });
         }
     }, [activeSponsor]);
 
