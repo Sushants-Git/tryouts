@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "motion/react";
 import prices from "./prices.json";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Routes, Route, useLocation, useSearchParams } from "react-router-dom";
@@ -255,6 +256,8 @@ type TrackProps = {
 };
 
 function TrackList({ tracks }: { tracks: TrackProps[] }) {
+    const [expandedTrack, setExpandedTrack] = useState<string | null>(null);
+
     if (!tracks || tracks.length === 0) return null;
 
     const sortedTracks = [...tracks].sort((a, b) => {
@@ -265,8 +268,12 @@ function TrackList({ tracks }: { tracks: TrackProps[] }) {
         return totalB - totalA;
     });
 
+    const toggleExpand = (uuid: string) => {
+        setExpandedTrack((prev) => (prev === uuid ? null : uuid));
+    };
+
     return (
-        <div className="mt-4 bg-white border border-gray-200 flex flex-col">
+        <div className="mt-4 bg-white border border-gray-200 flex flex-col rounded-md overflow-hidden">
             {sortedTracks.map((track) => {
                 const totalAmount =
                     track.prizes?.reduce(
@@ -274,21 +281,112 @@ function TrackList({ tracks }: { tracks: TrackProps[] }) {
                         0
                     ) || 0;
 
+                const isExpanded = expandedTrack === track.uuid;
+
                 return (
-                    <div
-                        key={track.uuid}
-                        className="flex items-center justify-between border-b border-gray-100 py-2 px-2"
-                    >
-                        <div className="text-[15px] text-gray-800 w-[80%] truncate">
-                            {track.name}
+                    <div key={track.uuid} className="border-b border-gray-100">
+                        <div
+                            onClick={() => toggleExpand(track.uuid)}
+                            className="flex items-center justify-between py-2 px-3 cursor-pointer hover:bg-gray-50 transition"
+                        >
+                            <div className="flex items-center gap-2 w-[80%] truncate">
+                                {isExpanded ? (
+                                    <ChevronUp
+                                        size={16}
+                                        className="text-gray-500 flex-shrink-0"
+                                    />
+                                ) : (
+                                    <ChevronDown
+                                        size={16}
+                                        className="text-gray-500 flex-shrink-0"
+                                    />
+                                )}
+                                <span className="text-[15px] text-gray-800 truncate select-none">
+                                    {track.name}
+                                </span>
+                            </div>
+                            <div className="text-[14px] text-gray-500 font-mono">
+                                ${totalAmount.toLocaleString()}
+                            </div>
                         </div>
-                        <div className="text-[14px] text-gray-500 font-mono">
-                            ${totalAmount.toLocaleString()}
-                        </div>
+
+                        <AnimatePresence initial={false}>
+                            <motion.div
+                                key={track.uuid}
+                                initial={false}
+                                animate={
+                                    isExpanded
+                                        ? { height: "auto", opacity: 1 }
+                                        : { height: 0, opacity: 0 }
+                                }
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{
+                                    duration: 0.25,
+                                    ease: "easeInOut",
+                                }}
+                                className="overflow-hidden bg-gray-50/40 px-3 text-sm text-gray-700 leading-relaxed"
+                            >
+                                <div className="pt-2 whitespace-pre-line">
+                                    {track.description}
+                                </div>
+
+                                <div className="pb-3">
+                                    {track.prizes?.length > 0 && (
+                                        <div className="mt-3 border-t border-gray-200 pt-2">
+                                            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                                                Prize Breakdown
+                                            </h4>
+                                            {track.prizes.map((p) => (
+                                                <div
+                                                    key={p.uuid}
+                                                    className="flex justify-between text-sm py-0.5"
+                                                >
+                                                    <div>{p.name}</div>
+                                                    <div className="font-mono text-gray-600">
+                                                        $
+                                                        {p.amount.toLocaleString()}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
                 );
             })}
         </div>
+    );
+}
+
+export function ChevronUp({ size = 16, className = "" }: ChevronProps) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 640"
+            width={size}
+            height={size}
+            className={className}
+            fill="currentColor"
+        >
+            <path d="M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z" />
+        </svg>
+    );
+}
+
+export function ChevronDown({ size = 16, className = "" }: ChevronProps) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 640"
+            width={size}
+            height={size}
+            className={className}
+            fill="currentColor"
+        >
+            <path d="M297.4 470.6C309.9 483.1 330.2 483.1 342.7 470.6L534.7 278.6C547.2 266.1 547.2 245.8 534.7 233.3C522.2 220.8 501.9 220.8 489.4 233.3L320 402.7L150.6 233.4C138.1 220.9 117.8 220.9 105.3 233.4C92.8 245.9 92.8 266.2 105.3 278.7L297.3 470.7z" />
+        </svg>
     );
 }
 
