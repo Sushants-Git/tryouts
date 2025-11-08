@@ -157,36 +157,4 @@ function Seperator({ size = 48 }: { size?: number }) {
     );
 }
 
-function PatternSVG() {
-    return (
-        <div className="absolute inset-0 text-gray-200/60">
-            <svg width="100%" height="100%">
-                <defs>
-                    <pattern
-                        id="pattern-diagonal"
-                        viewBox="0 0 10 10"
-                        width="8"
-                        height="8"
-                        patternUnits="userSpaceOnUse"
-                    >
-                        <line
-                            x1="0"
-                            y1="10"
-                            x2="10"
-                            y2="0"
-                            stroke="currentColor"
-                            vectorEffect="non-scaling-stroke"
-                        />
-                    </pattern>
-                </defs>
-                <rect
-                    width="100%"
-                    height="100%"
-                    fill="url(#pattern-diagonal)"
-                />
-            </svg>
-        </div>
-    );
-}
-
 export default App;
