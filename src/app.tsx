@@ -31,32 +31,26 @@ function Home() {
     });
 
     return (
-        <div className="bg-bg">
-            <div className="w-full max-w-320 md:w-[85%] lg:w-[75%] mx-auto h-full font-geist bg-bg pb-[500px]">
-                <div className="min-h-screen flex flex-col">
-                    <div className="flex w-full">
-                        <div className="w-[30%] pt-4">
-                            <IndexSidebar
-                                prizeDetails={prizeDetails}
-                                activeSponsor={activeSponsor}
-                                onSponsorClick={(name) => {
-                                    document
-                                        .getElementById(name)
-                                        ?.scrollIntoView({
-                                            behavior: "smooth",
-                                        });
-                                }}
-                            />
-                        </div>
+        <div className="bg-bg min-h-screen">
+            <div className="w-full max-w-[1200px] mx-auto font-geist bg-bg pb-[500px]">
+                <div className="flex flex-col md:flex-row w-full gap-6 md:gap-0">
+                    <div className="w-full md:w-[30%] pt-4 px-4 md:px-0">
+                        <IndexSidebar
+                            prizeDetails={prizeDetails}
+                            activeSponsor={activeSponsor}
+                            onSponsorClick={(name) => {
+                                document.getElementById(name)?.scrollIntoView({
+                                    behavior: "smooth",
+                                });
+                            }}
+                        />
+                    </div>
 
-                        <div className="w-[70%] px-10">
-                            <div className="w-full">
-                                <Content
-                                    prizeDetails={prizeDetails}
-                                    onActiveSponsorChange={setActiveSponsor}
-                                />
-                            </div>
-                        </div>
+                    <div className="w-full md:w-[70%] px-4 md:px-10">
+                        <Content
+                            prizeDetails={prizeDetails}
+                            onActiveSponsorChange={setActiveSponsor}
+                        />
                     </div>
                 </div>
             </div>
@@ -78,7 +72,6 @@ const Content = memo(function Content({
         const value = e.target.value;
 
         if (debounceRef.current) clearTimeout(debounceRef.current);
-
         debounceRef.current = setTimeout(() => {
             setQuery(value);
         }, 300);
@@ -86,22 +79,16 @@ const Content = memo(function Content({
 
     const filteredDetails = useMemo(() => {
         if (!query.trim()) return prizeDetails;
-
         const lower = query.toLowerCase();
-
         return prizeDetails.filter((sponsor) => {
             const sponsorMatches = sponsor.name?.toLowerCase().includes(lower);
-
             const trackOrPrizeMatches = sponsor.tracks.some((track) => {
                 const trackMatches = track.name?.toLowerCase().includes(lower);
-
                 const prizeMatches = track.prizes?.some((p) =>
                     p.name?.toLowerCase().includes(lower)
                 );
-
                 return trackMatches || prizeMatches;
             });
-
             return sponsorMatches || trackOrPrizeMatches;
         }) as typeof prizeDetails;
     }, [query, prizeDetails]);
@@ -113,10 +100,9 @@ const Content = memo(function Content({
                     type="text"
                     onChange={handleChange}
                     placeholder="Search track or prize name..."
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-sm"
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-sm text-sm md:text-base"
                 />
             </div>
-
             <SponsorPrizes
                 prizeDetails={filteredDetails}
                 onActiveSponsorChange={onActiveSponsorChange}
@@ -177,24 +163,7 @@ const SponsorPrizes = ({
                         }
                     }
 
-                    if (!bestName) {
-                        let minDist = Infinity;
-                        for (const [name, el] of Object.entries(
-                            sponsorRefs.current
-                        )) {
-                            if (!el) continue;
-                            const dist = Math.abs(
-                                el.getBoundingClientRect().top
-                            );
-                            if (dist < minDist) {
-                                minDist = dist;
-                                bestName = name;
-                            }
-                        }
-                    }
-
                     if (!bestName) return;
-
                     onActiveSponsorChange(bestName);
 
                     const url = new URL(window.location.href);
@@ -223,7 +192,7 @@ const SponsorPrizes = ({
     }, [prizeDetails, onActiveSponsorChange]);
 
     return (
-        <div>
+        <div className="space-y-10 mt-5">
             {prizeDetails.map((sponsor, index) => {
                 const totalAmount = sponsor.tracks?.reduce((sum, track) => {
                     const trackSum = track.prizes?.reduce(
@@ -243,35 +212,31 @@ const SponsorPrizes = ({
                         data-name={sponsor.name}
                         className="scroll-mt-24"
                     >
-                        <div className="flex items-center gap-4 border border-gray-200 bg-white px-5 py-4 rounded-sm">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 border border-gray-200 bg-white px-5 py-4 rounded-sm">
                             {sponsor.logo && (
-                                <div className="flex items-center justify-center rounded-md">
-                                    <img
-                                        src={sponsor.logo}
-                                        alt={sponsor.name}
-                                        className="h-12 w-12 object-contain rounded"
-                                    />
-                                </div>
+                                <img
+                                    src={sponsor.logo}
+                                    alt={sponsor.name}
+                                    className="h-10 w-10 sm:h-12 sm:w-12 object-contain rounded"
+                                />
                             )}
                             <div>
-                                <div className="text-base tracking-wide font-bold text-gray-900">
+                                <div className="text-base sm:text-lg font-bold text-gray-900">
                                     {sponsor.name}
                                 </div>
-                                <div className="text-[14px] text-gray-500 font-mono font-bold">
+                                <div className="text-[13px] sm:text-[14px] text-gray-500 font-mono font-bold">
                                     ${totalAmount.toLocaleString()}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="mt-5">
+                        <div className="mt-4">
                             <TrackList tracks={sponsor.tracks} />
                         </div>
 
                         {prizeDetails.length - 1 !== index && (
-                            <div className="fill-gray-400 h-20 flex items-center">
-                                <div className="mx-auto w-fit h-auto">
-                                    <Seperator size={30} />
-                                </div>
+                            <div className="fill-gray-400 h-14 flex items-center justify-center">
+                                <Seperator size={24} />
                             </div>
                         )}
                     </div>
@@ -477,7 +442,7 @@ function IndexSidebar({
     }, [activeSponsor]);
 
     return (
-        <div className="sticky top-4 w-full h-[calc(50vh-2rem)] bg-white rounded-md border border-gray-200 relative px-4 py-5">
+        <div className="hidden md:block md:sticky md:top-4 w-full md:h-[calc(50vh-2rem)] bg-white rounded-md border border-gray-200 relative px-4 py-5">
             <div
                 ref={scrollRef}
                 className="overflow-y-auto h-full pb-3.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overscroll-contain"
@@ -486,50 +451,49 @@ function IndexSidebar({
                     Organizer
                 </h2>
                 {organizer.map((s) => (
-                    <div
+                    <SidebarItem
                         key={s.uuid}
-                        ref={(el) => {
-                            itemRefs.current[s.name] = el;
-                        }}
-                        onClick={() => onSponsorClick(s.name)}
-                        className={`cursor-pointer mb-3 rounded-md px-2 py-1.5 transition-colors ${
-                            activeSponsor === s.name
-                                ? "bg-gray-100 text-blue-600"
-                                : "hover:bg-gray-50"
-                        }`}
-                    >
-                        <div className="text-sm">{s.name}</div>
-                        <div className="text-xs text-gray-500">
-                            Upto ${s.totalPrizeAmount?.toLocaleString()}
-                        </div>
-                    </div>
+                        s={s}
+                        activeSponsor={activeSponsor}
+                        onClick={onSponsorClick}
+                        itemRefs={itemRefs}
+                    />
                 ))}
 
                 <h2 className="text-xs uppercase text-gray-400 font-semibold mt-5 mb-2">
                     Partners
                 </h2>
                 {partners.map((s) => (
-                    <div
+                    <SidebarItem
                         key={s.uuid}
-                        ref={(el) => {
-                            itemRefs.current[s.name] = el;
-                        }}
-                        onClick={() => onSponsorClick(s.name)}
-                        className={`cursor-pointer mb-3 rounded-md px-2 py-1.5 transition-colors ${
-                            activeSponsor === s.name
-                                ? "bg-gray-100 text-blue-600"
-                                : "hover:bg-gray-50"
-                        }`}
-                    >
-                        <div className="text-sm">{s.name}</div>
-                        <div className="text-xs text-gray-500">
-                            Upto ${s.totalPrizeAmount?.toLocaleString()}
-                        </div>
-                    </div>
+                        s={s}
+                        activeSponsor={activeSponsor}
+                        onClick={onSponsorClick}
+                        itemRefs={itemRefs}
+                    />
                 ))}
             </div>
+        </div>
+    );
+}
 
-            <div className="pointer-events-none absolute bottom-0 left-0 w-full h-15 bg-gradient-to-t from-white/15 to-transparent rounded-b-md" />
+function SidebarItem({ s, activeSponsor, onClick, itemRefs }: any) {
+    return (
+        <div
+            ref={(el) => {
+                itemRefs.current[s.name] = el;
+            }}
+            onClick={() => onClick(s.name)}
+            className={`cursor-pointer mb-3 rounded-md px-2 py-1.5 transition-colors ${
+                activeSponsor === s.name
+                    ? "bg-gray-100 text-blue-600"
+                    : "hover:bg-gray-50"
+            }`}
+        >
+            <div className="text-sm">{s.name}</div>
+            <div className="text-xs text-gray-500">
+                Upto ${s.totalPrizeAmount?.toLocaleString()}
+            </div>
         </div>
     );
 }
