@@ -290,17 +290,18 @@ function TrackList({ tracks }: { tracks: TrackProps[] }) {
                             className="flex items-center justify-between py-2 px-3 cursor-pointer hover:bg-gray-50 transition"
                         >
                             <div className="flex items-center gap-2 w-[80%] truncate">
-                                {isExpanded ? (
-                                    <ChevronUp
-                                        size={16}
-                                        className="text-gray-500 flex-shrink-0"
-                                    />
-                                ) : (
-                                    <ChevronDown
-                                        size={16}
-                                        className="text-gray-500 flex-shrink-0"
-                                    />
-                                )}
+                                <motion.div
+                                    animate={{
+                                        rotate: isExpanded ? 180 : 0,
+                                    }}
+                                    transition={{
+                                        duration: 0.25,
+                                        ease: "easeInOut",
+                                    }}
+                                    className="text-gray-500"
+                                >
+                                    <ChevronDown size={16} />
+                                </motion.div>
                                 <span className="text-[15px] text-gray-800 truncate select-none">
                                     {track.name}
                                 </span>
