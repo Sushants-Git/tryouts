@@ -4,7 +4,7 @@ function App() {
     const prizeDetails = prices.pageProps.prizeDetails;
 
     return (
-        <div className="w-full max-w-320 md:w-[85%] lg:w-[75%] mx-auto h-full border font-geist">
+        <div className="w-full max-w-320 md:w-[85%] lg:w-[75%] mx-auto h-full border font-geist bg-bg">
             <div className="min-h-screen flex flex-col">
                 <div className="flex w-full">
                     <div className="w-[30%] border border-red-400">index</div>
@@ -66,7 +66,7 @@ const SponsorPrizes = ({
                             ) : null}
 
                             <div>
-                                <div className="text-base tracking-wide font-semibold text-gray-900">
+                                <div className="text-base tracking-wide font-bold text-gray-900">
                                     {sponsor.name}
                                 </div>
                                 <div className="text-[14px] text-gray-500 font-mono font-bold">
@@ -118,7 +118,7 @@ function TrackList({ tracks }: { tracks: TrackProps[] }) {
     });
 
     return (
-        <div className="mt-4 space-y-6">
+        <div className="mt-4 bg-white border border-gray-200">
             {sortedTracks.map((track) => {
                 const totalAmount =
                     track.prizes?.reduce(
@@ -129,12 +129,12 @@ function TrackList({ tracks }: { tracks: TrackProps[] }) {
                 return (
                     <div
                         key={track.uuid}
-                        className="flex items-center justify-between border-b border-gray-100 pb-2"
+                        className="flex items-center justify-between border-b border-gray-100 py-2 px-2"
                     >
-                        <div className="text-[14px] text-gray-800">
+                        <div className="text-[15px] text-gray-800 w-[80%] truncate">
                             {track.name}
                         </div>
-                        <div className="text-[13px] text-gray-500 font-mono">
+                        <div className="text-[14px] text-gray-500 font-mono">
                             ${totalAmount.toLocaleString()}
                         </div>
                     </div>
