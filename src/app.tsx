@@ -2,6 +2,8 @@ import { motion, AnimatePresence } from "motion/react";
 import prices from "./prices.json";
 import { useState, useMemo, useRef, useEffect, memo } from "react";
 import { Routes, Route, useLocation, useSearchParams } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function App() {
     return (
@@ -367,7 +369,13 @@ function TrackList({ tracks }: { tracks: TrackProps[] }) {
                                 className="overflow-hidden bg-gray-50/40 px-3 text-sm text-gray-700 leading-relaxed"
                             >
                                 <div className="pt-2 whitespace-pre-line">
-                                    {track.description}
+                                    {isExpanded ? (
+                                        <MarkdownRenderer
+                                            content={track.description}
+                                        />
+                                    ) : (
+                                        track.description
+                                    )}
                                 </div>
 
                                 <div className="pb-3">
@@ -519,6 +527,89 @@ function IndexSidebar({
             <div className="pointer-events-none absolute bottom-0 left-0 w-full h-15 bg-gradient-to-t from-white/15 to-transparent rounded-b-md" />
         </div>
     );
+}
+
+const MarkdownRenderer = ({ content }: { content: string | undefined }) => {
+    if (!content) return null;
+
+    const decoded = content.replace(/\\n/g, "\n");
+
+    const normalized = decoded
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+
+    return (
+        <div className="prose max-w-none prose-headings:font-semibold prose-p:leading-relaxed prose-li:my-1">
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                    a: ({ href, children }) => {
+                        const videoId = href ? extractYouTubeId(href) : null;
+
+                        if (videoId) {
+                            return (
+                                <div className="my-4">
+                                    <iframe
+                                        width="100%"
+                                        height="360"
+                                        src={`https://www.youtube.com/embed/${videoId}`}
+                                        title="YouTube video player"
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        className="rounded-md"
+                                    />
+                                </div>
+                            );
+                        }
+
+                        return (
+                            <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline hover:text-blue-800"
+                            >
+                                {children}
+                            </a>
+                        );
+                    },
+                    h2: ({ children }) => (
+                        <h2 className="text-xl font-semibold flex items-center gap-2">
+                            {children}
+                        </h2>
+                    ),
+                    li: ({ children }) => (
+                        <li className="ml-4 list-disc -my-2">{children}</li>
+                    ),
+                }}
+            >
+                {normalized}
+            </ReactMarkdown>
+        </div>
+    );
+};
+
+function extractYouTubeId(url: string): string | null {
+    try {
+        const u = new URL(url);
+        if (u.hostname.includes("youtu.be")) {
+            return u.pathname.replace("/", "");
+        }
+        if (u.hostname.includes("youtube.com")) {
+            const id = u.searchParams.get("v");
+            if (id) return id;
+            const pathParts = u.pathname.split("/");
+            if (pathParts.includes("embed") || pathParts.includes("shorts")) {
+                return pathParts.pop() || null;
+            }
+        }
+        return null;
+    } catch {
+        return null;
+    }
 }
 
 export default App;
