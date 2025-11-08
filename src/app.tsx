@@ -1,12 +1,6 @@
 import prices from "./prices.json";
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import {
-    Routes,
-    Route,
-    useSearchParams,
-    useNavigate,
-    useLocation,
-} from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 function App() {
     return (
@@ -18,17 +12,34 @@ function App() {
 
 function Home() {
     const prizeDetails = prices.pageProps.prizeDetails;
+    const [activeSponsor, setActiveSponsor] = useState<string | null>(null);
 
     return (
-        <div className="w-full max-w-320 md:w-[85%] lg:w-[75%] mx-auto h-full border font-geist bg-bg">
-            <div className="min-h-screen flex flex-col">
-                <div className="flex w-full">
-                    <div className="w-[30%] border border-red-400">index</div>
+        <div className="bg-bg">
+            <div className="w-full max-w-320 md:w-[85%] lg:w-[75%] mx-auto h-full font-geist bg-bg pb-[500px]">
+                <div className="min-h-screen flex flex-col">
+                    <div className="flex w-full">
+                        <div className="w-[30%]">
+                            <IndexSidebar
+                                prizeDetails={prizeDetails}
+                                activeSponsor={activeSponsor}
+                                onSponsorClick={(name) => {
+                                    document
+                                        .getElementById(name)
+                                        ?.scrollIntoView({
+                                            behavior: "smooth",
+                                        });
+                                }}
+                            />
+                        </div>
 
-                    <div className="w-[70%] px-10">
-                        <div className="h-20">som</div>
-                        <div className="w-full">
-                            <Content prizeDetails={prizeDetails} />
+                        <div className="w-[70%] px-10">
+                            <div className="w-full">
+                                <Content
+                                    prizeDetails={prizeDetails}
+                                    onActiveSponsorChange={setActiveSponsor}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -39,8 +50,10 @@ function Home() {
 
 function Content({
     prizeDetails,
+    onActiveSponsorChange,
 }: {
     prizeDetails: typeof prices.pageProps.prizeDetails;
+    onActiveSponsorChange: (name: string | null) => void;
 }) {
     const [query, setQuery] = useState("");
 
@@ -67,7 +80,7 @@ function Content({
     }, [query, prizeDetails]);
 
     return (
-        <div className="p-4 border border-red-600">
+        <div>
             <div className="sticky top-0 z-10 border-gray-200 py-4 bg-bg">
                 <input
                     type="text"
@@ -78,15 +91,20 @@ function Content({
                 />
             </div>
 
-            <SponsorPrizes prizeDetails={filteredDetails} />
+            <SponsorPrizes
+                prizeDetails={filteredDetails}
+                onActiveSponsorChange={onActiveSponsorChange}
+            />
         </div>
     );
 }
 
 const SponsorPrizes = ({
     prizeDetails,
+    onActiveSponsorChange,
 }: {
     prizeDetails: typeof prices.pageProps.prizeDetails;
+    onActiveSponsorChange: (name: string | null) => void;
 }) => {
     const sponsorRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const location = useLocation();
@@ -120,10 +138,11 @@ const SponsorPrizes = ({
                 }
             }
 
+            onActiveSponsorChange(currentVisible);
+
             if (currentVisible) {
                 const url = new URL(window.location.href);
                 const existing = url.searchParams.get("sponsor");
-
                 if (existing !== currentVisible) {
                     url.searchParams.set("sponsor", currentVisible);
                     window.history.replaceState({}, "", url.toString());
@@ -133,7 +152,7 @@ const SponsorPrizes = ({
 
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [prizeDetails]);
+    }, [prizeDetails, onActiveSponsorChange]);
 
     return (
         <div>
@@ -220,7 +239,7 @@ function TrackList({ tracks }: { tracks: TrackProps[] }) {
     });
 
     return (
-        <div className="mt-4 bg-white border border-gray-200">
+        <div className="mt-4 bg-white border border-gray-200 flex flex-col">
             {sortedTracks.map((track) => {
                 const totalAmount =
                     track.prizes?.reduce(
@@ -256,6 +275,96 @@ function Seperator({ size = 48 }: { size?: number }) {
         >
             <path d="M96 320C96 289.1 121.1 264 152 264C182.9 264 208 289.1 208 320C208 350.9 182.9 376 152 376C121.1 376 96 350.9 96 320zM264 320C264 289.1 289.1 264 320 264C350.9 264 376 289.1 376 320C376 350.9 350.9 376 320 376C289.1 376 264 350.9 264 320zM488 264C518.9 264 544 289.1 544 320C544 350.9 518.9 376 488 376C457.1 376 432 350.9 432 320C432 289.1 457.1 264 488 264z" />
         </svg>
+    );
+}
+
+function IndexSidebar({
+    prizeDetails,
+    activeSponsor,
+    onSponsorClick,
+}: {
+    prizeDetails: typeof prices.pageProps.prizeDetails;
+    activeSponsor: string | null;
+    onSponsorClick: (name: string) => void;
+}) {
+    const organizer = prizeDetails.filter((s) => s.type === "organizer");
+    const partners = prizeDetails.filter((s) => s.type === "sponsor");
+
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+    const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    useEffect(() => {
+        if (activeSponsor && itemRefs.current[activeSponsor]) {
+            const el = itemRefs.current[activeSponsor];
+            const container = scrollRef.current;
+            if (!el || !container) return;
+
+            const elRect = el.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            if (
+                elRect.top < containerRect.top + 16 ||
+                elRect.bottom > containerRect.bottom - 16
+            ) {
+                el.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                });
+            }
+        }
+    }, [activeSponsor]);
+
+    return (
+        <div className="sticky top-4 w-full h-[calc(50vh-2rem)] bg-white rounded-md border border-gray-200 relative px-4 py-5">
+            <div
+                ref={scrollRef}
+                className="overflow-y-auto h-full pb-3.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overscroll-contain"
+            >
+                <h2 className="text-xs uppercase text-gray-400 font-semibold mb-2">
+                    Organizer
+                </h2>
+                {organizer.map((s) => (
+                    <div
+                        key={s.uuid}
+                        ref={(el) => (itemRefs.current[s.name] = el)}
+                        onClick={() => onSponsorClick(s.name)}
+                        className={`cursor-pointer mb-3 rounded-md px-2 py-1.5 transition-colors ${
+                            activeSponsor === s.name
+                                ? "bg-gray-100 text-blue-600"
+                                : "hover:bg-gray-50"
+                        }`}
+                    >
+                        <div className="text-sm">{s.name}</div>
+                        <div className="text-xs text-gray-500">
+                            Upto ${s.totalPrizeAmount?.toLocaleString()}
+                        </div>
+                    </div>
+                ))}
+
+                <h2 className="text-xs uppercase text-gray-400 font-semibold mt-5 mb-2">
+                    Partners
+                </h2>
+                {partners.map((s) => (
+                    <div
+                        key={s.uuid}
+                        ref={(el) => (itemRefs.current[s.name] = el)}
+                        onClick={() => onSponsorClick(s.name)}
+                        className={`cursor-pointer mb-3 rounded-md px-2 py-1.5 transition-colors ${
+                            activeSponsor === s.name
+                                ? "bg-gray-100 text-blue-600"
+                                : "hover:bg-gray-50"
+                        }`}
+                    >
+                        <div className="text-sm">{s.name}</div>
+                        <div className="text-xs text-gray-500">
+                            Upto ${s.totalPrizeAmount?.toLocaleString()}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="pointer-events-none absolute bottom-0 left-0 w-full h-15 bg-gradient-to-t from-white/15 to-transparent rounded-b-md" />
+        </div>
     );
 }
 
