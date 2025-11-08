@@ -360,7 +360,7 @@ function TrackList({ tracks }: { tracks: TrackProps[] }) {
     );
 }
 
-export function ChevronUp({ size = 16, className = "" }: ChevronProps) {
+export function ChevronUp({ size = 16, className = "" }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -375,7 +375,7 @@ export function ChevronUp({ size = 16, className = "" }: ChevronProps) {
     );
 }
 
-export function ChevronDown({ size = 16, className = "" }: ChevronProps) {
+export function ChevronDown({ size = 16, className = "" }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
