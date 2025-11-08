@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import prices from "./prices.json";
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, memo } from "react";
 import { Routes, Route, useLocation, useSearchParams } from "react-router-dom";
 
 function App() {
@@ -62,7 +62,7 @@ function Home() {
     );
 }
 
-function Content({
+const Content = memo(function Content({
     prizeDetails,
     onActiveSponsorChange,
 }: {
@@ -111,7 +111,7 @@ function Content({
             />
         </div>
     );
-}
+});
 
 const SponsorPrizes = ({
     prizeDetails,
